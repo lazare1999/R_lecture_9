@@ -7,7 +7,8 @@ library("ggplot2")
 
 
 # Read the text file from local machine , choose file interactively
-text <- readLines('TeamHealthRawDataForDemo.txt')
+# text <- readLines('TeamHealthRawDataForDemo.txt')
+text <- readLines('dale_carnegie.txt')
 # Load the data as a corpus
 TextDoc <- Corpus(VectorSource(text))
 
@@ -47,7 +48,6 @@ barplot(dtm_d[1:5,]$freq, las = 2, names.arg = dtm_d[1:5,]$word,
         col ="lightgreen", main ="Top 5 most frequent words",
         ylab = "Word frequencies")
 
-
 #generate word cloud
 set.seed(1234)
 wordcloud(words = dtm_d$word, freq = dtm_d$freq, min.freq = 5,
@@ -59,7 +59,6 @@ wordcloud(words = dtm_d$word, freq = dtm_d$freq, min.freq = 5,
 findAssocs(TextDoc_dtm, terms = c("good","work","health"), corlimit = 0.25)
 # Find associations for words that occur at least 50 times
 findAssocs(TextDoc_dtm, terms = findFreqTerms(TextDoc_dtm, lowfreq = 50), corlimit = 0.25)
-
 
 # regular sentiment score using get_sentiment() function and method of your choice
 # please note that different methods may have different scales
@@ -84,3 +83,35 @@ rbind(
   sign(head(bing_vector)),
   sign(head(afinn_vector))
 )
+
+# run nrc sentiment analysis to return data frame with each row classified as one of the following
+# emotions, rather than a score:
+# anger, anticipation, disgust, fear, joy, sadness, surprise, trust
+# It also counts the number of positive and negative emotions found in each row
+d<-get_nrc_sentiment(text)
+# head(d,10) - to see top 10 lines of the get_nrc_sentiment dataframe
+head (d,10)
+
+#transpose
+td<-data.frame(t(d))
+#The function rowSums computes column sums across rows for each level of a grouping variable.
+td_new <- data.frame(rowSums(td[2:253]))
+#Transformation and cleaning
+names(td_new)[1] <- "count"
+td_new <- cbind("sentiment" = rownames(td_new), td_new)
+rownames(td_new) <- NULL
+td_new2<-td_new[1:8,]
+#Plot One - count of words associated with each sentiment
+quickplot(sentiment, data=td_new2, weight=count, geom="bar", fill=sentiment, ylab="count")+ggtitle("Survey sentiments")
+
+#transpose
+td<-data.frame(t(d))
+#The function rowSums computes column sums across rows for each level of a grouping variable.
+td_new <- data.frame(rowSums(td[2:253]))
+#Transformation and cleaning
+names(td_new)[1] <- "count"
+td_new <- cbind("sentiment" = rownames(td_new), td_new)
+rownames(td_new) <- NULL
+td_new2<-td_new[1:8,]
+#Plot One - count of words associated with each sentiment
+quickplot(sentiment, data=td_new2, weight=count, geom="bar", fill=sentiment, ylab="count")+ggtitle("Survey sentiments")
